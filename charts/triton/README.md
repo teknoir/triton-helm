@@ -4,6 +4,30 @@ This chart deploys the Triton Inference Server to a Kubernetes cluster.
 
 > The implementation of the Helm chart is right now the bare minimum to get it to work.
 
+## Usage in Teknoir platform
+Use the HelmChart to deploy the Triton Inference Server to a Device.
+
+```yaml
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: triton
+  namespace: kube-system
+spec:
+  repo: https://teknoir.github.io/triton-helm
+  chart: triton
+  targetNamespace: default
+  valuesContent: |-
+    triton:
+      modelRepositoryPath: /opt/teknoir/models
+      models:
+        - name: rtdetr
+          image:  us-docker.pkg.dev/teknoir/gcr.io/rtdetr-triton:latest
+        - name: up_down_classifier
+          image:  us-docker.pkg.dev/teknoir/gcr.io/up-down-classifier-triton:latest
+```
+
 ## Example values.yaml
 
 ```yaml
