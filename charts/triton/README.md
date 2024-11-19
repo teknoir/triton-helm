@@ -18,3 +18,15 @@ triton:
     - name: up_down_classifier
       image:  us-docker.pkg.dev/teknoir/gcr.io/up-down-classifier-triton:latest
 ```
+
+## Adding the repository
+
+```bash
+helm repo add teknoir-triton https://teknoir.github.io/triton-helm/
+```
+
+## Installing the chart
+
+```bash
+helm install triton teknoir-triton/triton -f values.yaml
+```
