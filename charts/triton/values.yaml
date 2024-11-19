@@ -1,0 +1,9 @@
+# Values needed for Triton Inference Server
+triton:
+  # The path to the models directory
+  modelRepositoryPath: /opt/teknoir/models
+  # Models to be installed via a shared mounted host path (volume)
+  models: []
+
+
+

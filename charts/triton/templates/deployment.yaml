@@ -1,0 +1,85 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: triton
+  name: triton
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: triton
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "8002"
+      labels:
+        teknoir.org/app: triton
+        app: triton
+    spec:
+      runtimeClassName: nvidia
+{{- if not (empty .Values.triton.models) }}
+      initContainers:
+{{- range .Values.triton.models }}
+        - name: init-container-{{ .name }}
+          image: {{ .image }}
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: model-volume
+              mountPath: /models
+{{- end }}
+{{- end }}
+      containers:
+        - name: triton
+          image: nvcr.io/nvidia/deepstream:7.0-triton-multiarch
+          imagePullPolicy: Always
+          command: [ "/opt/tritonserver/bin/tritonserver" ]
+          args:
+            [
+              "--model-repository=/models",
+              "--backend-directory=/opt/tritonserver/backends",
+              "--log-verbose=1",
+              "--log-info=true",
+              "--log-warning=true",
+              "--log-error=true",
+              "--min-supported-compute-capability=5.3",
+            ]
+          ports:
+            - containerPort: 8000
+              name: http
+            - containerPort: 8001
+              name: grpc
+            - containerPort: 8002
+              name: metrics
+          livenessProbe:
+            httpGet:
+              path: /api/health/live
+              port: http
+          readinessProbe:
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            httpGet:
+              path: /api/health/ready
+              port: http
+          resources:
+            limits:
+              cpu: 1500m
+              memory: 1512Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          volumeMounts:
+            - name: model-volume
+              mountPath: /models
+      volumes:
+        - name: model-volume
+          hostPath:
+            # directory location on host
+            path: "{{ .Values.triton.modelRepositoryPath }}"
+            type: DirectoryOrCreate
