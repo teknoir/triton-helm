@@ -19,28 +19,20 @@ spec:
   chart: triton
   targetNamespace: default
   valuesContent: |-
-    triton:
-      modelRepositoryPath: /opt/teknoir/models
-      models:
-        - name: rtdetr
-          image:  us-docker.pkg.dev/teknoir/gcr.io/rtdetr-triton:latest
-        - name: up_down_classifier
-          image:  us-docker.pkg.dev/teknoir/gcr.io/up-down-classifier-triton:latest
+    # The path to the models directory
+    modelRepositoryPath: /opt/teknoir/models
+    # Models to be installed via a shared mounted host path (volume)
+    models: []
 ```
 
 ## Example values.yaml
 
 ```yaml
-# Values needed for Triton Inference Server
-triton:
-  # The path to the models directory
-  modelRepositoryPath: /opt/teknoir/models
-  # Models to be installed via a shared mounted host path (volume)
-  models:
-    - name: rtdetr
-      image:  us-docker.pkg.dev/teknoir/gcr.io/rtdetr-triton:latest
-    - name: up_down_classifier
-      image:  us-docker.pkg.dev/teknoir/gcr.io/up-down-classifier-triton:latest
+models:
+- name: rtdetr
+  image:  us-docker.pkg.dev/teknoir/gcr.io/rtdetr-triton:latest
+- name: up_down_classifier
+  image:  us-docker.pkg.dev/teknoir/gcr.io/up-down-classifier-triton:latest
 ```
 
 ## Adding the repository

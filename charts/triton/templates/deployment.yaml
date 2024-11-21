@@ -24,9 +24,9 @@ spec:
         app: triton
     spec:
       runtimeClassName: nvidia
-{{- if not (empty .Values.triton.models) }}
+{{- if not (empty .Values.models) }}
       initContainers:
-{{- range .Values.triton.models }}
+{{- range .Values.models }}
         - name: init-container-{{ .name }}
           image: {{ .image }}
           imagePullPolicy: Always
@@ -81,5 +81,5 @@ spec:
         - name: model-volume
           hostPath:
             # directory location on host
-            path: "{{ .Values.triton.modelRepositoryPath }}"
+            path: "{{ .Values.modelRepositoryPath }}"
             type: DirectoryOrCreate
