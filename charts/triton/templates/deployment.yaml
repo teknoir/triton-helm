@@ -71,12 +71,7 @@ spec:
               path: /v2/health/ready
               port: http
           resources:
-            limits:
-              cpu: 1500m
-              memory: 1512Mi
-            requests:
-              cpu: 100m
-              memory: 128Mi
+            {{- toYaml $.Values.resources | nindent 12 }}
           volumeMounts:
             - name: model-volume
               mountPath: /models
