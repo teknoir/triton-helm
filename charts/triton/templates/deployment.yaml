@@ -2,10 +2,12 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  labels:
-    app: triton
   name: triton
   namespace: {{ .Release.Namespace }}
+  labels:
+    app: triton
+  annotations:
+    {{- toYaml $.Values.annotations | nindent 4 }}
 spec:
   replicas: 1
   strategy:
@@ -19,6 +21,7 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/path: "/metrics"
         prometheus.io/port: "8002"
+        {{- toYaml $.Values.annotations | nindent 8 }}
       labels:
         teknoir.org/app: triton
         app: triton

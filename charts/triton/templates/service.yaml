@@ -4,6 +4,8 @@ kind: Service
 metadata:
   name: triton
   namespace: {{ .Release.Namespace }}
+  annotations:
+    {{- toYaml $.Values.annotations | nindent 4 }}
 spec:
   type: ClusterIP
   ports:

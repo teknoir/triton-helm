@@ -4,3 +4,6 @@
 modelRepositoryPath: /opt/teknoir/models
 # Models to be installed via a shared mounted host path (volume)
 models: []
+# Default annotations
+annotations:
+  teknoir.org/managed-by: devstudio

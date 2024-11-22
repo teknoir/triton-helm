@@ -13,7 +13,7 @@ apiVersion: helm.cattle.io/v1
 kind: HelmChart
 metadata:
   name: triton
-  namespace: kube-system
+  namespace: default
 spec:
   repo: https://teknoir.github.io/triton-helm
   chart: triton
