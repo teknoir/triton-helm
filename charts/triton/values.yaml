@@ -1,5 +1,11 @@
 # Values needed for Triton Inference Server
 
+# Default values for triton
+image:
+  repository: nvcr.io/nvidia/deepstream
+  tag: 7.1-triton-multiarch
+  pullPolicy: Always
+
 # The path to the models directory
 modelRepositoryPath: /opt/teknoir/models
 # Models to be installed via a shared mounted host path (volume)
