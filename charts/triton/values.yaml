@@ -2,8 +2,8 @@
 
 # Default values for triton
 image:
-  repository: nvcr.io/nvidia/deepstream
-  tag: 7.1-triton-multiarch
+  repository: nvcr.io/nvidia/tritonserver
+  tag: 25.02-py3
   pullPolicy: Always
 
 # The path to the models directory
