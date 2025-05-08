@@ -3,6 +3,16 @@ entries:
   triton:
   - apiVersion: v2
     appVersion: "25.02"
+    created: "2025-05-08T07:10:10.298913459Z"
+    description: A Helm chart for Triton Inference Server
+    digest: e52341854df49d297f76d9a5196c8b8dc70818084fb1cae8ea898629dc85bef7
+    name: triton
+    type: application
+    urls:
+    - https://github.com/teknoir/triton-helm/releases/download/triton-0.2.0-trt10.8-nodeport/triton-0.2.0-trt10.8-nodeport.tgz
+    version: 0.2.0-trt10.8-nodeport
+  - apiVersion: v2
+    appVersion: "25.02"
     created: "2025-05-05T13:18:20.148954575Z"
     description: A Helm chart for Triton Inference Server
     digest: 09d0014e87411127b688ab91ad1e926472987a6ba36feb78bcf53488cb05c515
@@ -71,4 +81,4 @@ entries:
     urls:
     - https://github.com/teknoir/triton-helm/releases/download/triton-0.0.2/triton-0.0.2.tgz
     version: 0.0.2
-generated: "2025-05-05T13:18:20.148989019Z"
+generated: "2025-05-08T07:10:10.298968113Z"
