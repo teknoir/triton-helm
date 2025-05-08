@@ -20,3 +20,8 @@ resources:
   requests:
     cpu: 400m
     memory: 256Mi
+
+nodePort:
+  enabled: false
+  httpPort: 31333
+  grpcPort: 31334

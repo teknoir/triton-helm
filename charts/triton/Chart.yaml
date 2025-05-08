@@ -3,5 +3,5 @@ name: triton
 description: A Helm chart for Triton Inference Server
 
 type: application
-version: 0.2.0-trt10.8
+version: 0.2.0-trt10.8-nodeport
 appVersion: "25.02"
