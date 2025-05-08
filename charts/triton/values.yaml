@@ -1,5 +1,11 @@
 # Values needed for Triton Inference Server
 
+# Default values for triton
+image:
+  repository: nvcr.io/nvidia/tritonserver
+  tag: 25.02-py3
+  pullPolicy: Always
+
 # The path to the models directory
 modelRepositoryPath: /opt/teknoir/models
 # Models to be installed via a shared mounted host path (volume)
@@ -14,3 +20,8 @@ resources:
   requests:
     cpu: 400m
     memory: 256Mi
+
+nodePort:
+  enabled: false
+  httpPort: 31333
+  grpcPort: 31334

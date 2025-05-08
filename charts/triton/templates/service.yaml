@@ -7,14 +7,20 @@ metadata:
   annotations:
     {{- toYaml $.Values.annotations | nindent 4 }}
 spec:
-  type: ClusterIP
+  type: {{ if .Values.nodePort.enabled }}NodePort{{ else }}ClusterIP{{ end }}
   ports:
     - port: 8000
       targetPort: http
       name: http-inference-server
+      {{- if .Values.nodePort.enabled }}
+      nodePort: {{ .Values.nodePort.httpPort }}
+      {{- end }}
     - port: 8001
       targetPort: grpc
       name: grpc-inference-server
+      {{- if .Values.nodePort.enabled }}
+      nodePort: {{ .Values.nodePort.grpcPort }}
+      {{- end }}
     - port: 8002
       targetPort: metrics
       name: metrics-inference-server

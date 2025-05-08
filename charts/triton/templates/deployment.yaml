@@ -40,8 +40,8 @@ spec:
 {{- end }}
       containers:
         - name: triton
-          image: nvcr.io/nvidia/deepstream:7.0-triton-multiarch
-          imagePullPolicy: Always
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: [ "/opt/tritonserver/bin/tritonserver" ]
           args:
             [
