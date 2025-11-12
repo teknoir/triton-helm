@@ -19,9 +19,7 @@ spec:
   chart: triton
   targetNamespace: default
   valuesContent: |-
-    # The path to the models directory
-    modelRepositoryPath: /opt/teknoir/models
-    # Models to be installed via a shared mounted host path (volume)
+    # Models to be installed via a shared path
     models: []
 ```
 

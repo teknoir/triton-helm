@@ -33,9 +33,6 @@ spec:
         - name: init-container-{{ .name }}
           image: {{ .image }}
           imagePullPolicy: Always
-          volumeMounts:
-            - name: model-volume
-              mountPath: /models
 {{- end }}
 {{- end }}
       containers:
@@ -51,7 +48,6 @@ spec:
               "--log-info=true",
               "--log-warning=true",
               "--log-error=true",
-              "--min-supported-compute-capability=5.3",
             ]
           ports:
             - containerPort: 8000
@@ -72,12 +68,3 @@ spec:
               port: http
           resources:
             {{- toYaml $.Values.resources | nindent 12 }}
-          volumeMounts:
-            - name: model-volume
-              mountPath: /models
-      volumes:
-        - name: model-volume
-          hostPath:
-            # directory location on host
-            path: "{{ .Values.modelRepositoryPath }}"
-            type: DirectoryOrCreate
