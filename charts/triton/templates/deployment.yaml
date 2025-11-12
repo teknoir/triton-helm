@@ -32,6 +32,9 @@ spec:
         - name: init-container-{{ .name }}
           image: {{ .image }}
           imagePullPolicy: Always
+          volumeMounts:
+            - name: models
+              mountPath: "/models"
 {{- end }}
 {{- end }}
       containers:
@@ -67,3 +70,9 @@ spec:
               port: http
           resources:
             {{- toYaml $.Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: models
+              mountPath: "/models"
+      volumes:
+        - name: models
+          emptyDir: {}
