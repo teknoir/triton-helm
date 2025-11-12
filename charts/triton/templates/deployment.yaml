@@ -26,7 +26,6 @@ spec:
         teknoir.org/app: triton
         app: triton
     spec:
-      runtimeClassName: nvidia
 {{- if not (empty .Values.models) }}
       initContainers:
 {{- range .Values.models }}
