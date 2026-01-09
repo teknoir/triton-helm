@@ -6,11 +6,16 @@ image:
   tag: 25.02-py3
   pullPolicy: Always
 
+# GPU configuration
+gpu:
+  enabled: false
+  num: 1
+  type: nvidia-tesla-t4
+
 # Models to be installed via a shared mounted host path (volume)
 models: []
 # Default annotations
-annotations:
-  teknoir.org/managed-by: devstudio
+annotations: {}
 resources:
   limits:
     cpu: 2000m

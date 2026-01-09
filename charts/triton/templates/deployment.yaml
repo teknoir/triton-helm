@@ -7,7 +7,9 @@ metadata:
   labels:
     app: triton
   annotations:
-    {{- toYaml $.Values.annotations | nindent 4 }}
+    {{- with $.Values.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
   replicas: 1
   strategy:
@@ -21,11 +23,17 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/path: "/metrics"
         prometheus.io/port: "8002"
-        {{- toYaml $.Values.annotations | nindent 8 }}
+        {{- with $.Values.annotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       labels:
         teknoir.org/app: triton
         app: triton
     spec:
+{{- if .Values.gpu.enabled  }}
+      nodeSelector:
+        cloud.google.com/gke-accelerator: {{ .Values.gpu.type }}
+{{- end }}
 {{- if not (empty .Values.models) }}
       initContainers:
 {{- range .Values.models }}
@@ -69,7 +77,18 @@ spec:
               path: /v2/health/ready
               port: http
           resources:
-            {{- toYaml $.Values.resources | nindent 12 }}
+            requests:
+              cpu: {{ .Values.resources.requests.cpu }}
+              memory: {{ .Values.resources.requests.memory }}
+{{- if .Values.gpu.enabled  }}
+              nvidia.com/gpu: {{ .Values.gpu.num }}
+{{- end }}
+            limits:
+              cpu: {{ .Values.resources.limits.cpu }}
+              memory: {{ .Values.resources.limits.memory }}
+{{- if .Values.gpu.enabled  }}
+              nvidia.com/gpu: {{ .Values.gpu.num }}
+{{- end }}
           volumeMounts:
             - name: models
               mountPath: "/models"
