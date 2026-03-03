@@ -3,6 +3,16 @@ entries:
   triton:
   - apiVersion: v2
     appVersion: "25.02"
+    created: "2026-03-03T11:11:30.638196165Z"
+    description: A Helm chart for Triton Inference Server
+    digest: fcd5a6828b9c76daa6bd5d218975e1fb4ae776a23bbb156c222796103188e53d
+    name: triton
+    type: application
+    urls:
+    - https://github.com/teknoir/triton-helm/releases/download/triton-0.2.1/triton-0.2.1.tgz
+    version: 0.2.1
+  - apiVersion: v2
+    appVersion: "25.02"
     created: "2025-05-08T12:13:11.49534474Z"
     description: A Helm chart for Triton Inference Server
     digest: 3d9ab4a5f7150f091d8c7a43eb2bbf489513480a70fad54dc126ba590be625cd
@@ -131,4 +141,4 @@ entries:
     urls:
     - https://github.com/teknoir/triton-helm/releases/download/triton-0.0.2/triton-0.0.2.tgz
     version: 0.0.2
-generated: "2026-01-09T10:33:33.377201123Z"
+generated: "2026-03-03T11:11:30.638335246Z"
