@@ -27,6 +27,8 @@ spec:
         app: triton
     spec:
       runtimeClassName: nvidia
+      nodeSelector:
+        {{- toYaml $.Values.nodeSelector | nindent 8 }}
 {{- if not (empty .Values.models) }}
       initContainers:
 {{- range .Values.models }}

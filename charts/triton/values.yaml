@@ -25,3 +25,5 @@ nodePort:
   enabled: false
   httpPort: 31333
   grpcPort: 31334
+
+nodeSelector: {}
