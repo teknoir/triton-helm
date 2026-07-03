@@ -1,0 +1,32 @@
+site_name: 'Triton Inference Server'
+site_description: 'Teknoir Triton Inference Server — TechDocs'
+
+nav:
+  - '⚡ Overview': index.md
+  - '🚀 Triton App': app.md
+  - '⎈ Triton HelmChart': helmchart.md
+  - '📦 Triton Image': image.md
+
+theme:
+  name: material
+  palette:
+    - scheme: slate
+      primary: deep purple
+      accent: cyan
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.top
+    - content.code.copy
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.emoji
+  - tables
+  - toc:
+      permalink: true
+
+plugins:
+  - techdocs-core

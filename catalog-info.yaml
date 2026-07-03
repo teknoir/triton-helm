@@ -1,0 +1,64 @@
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  title: Triton
+  name: triton-app
+  namespace: teknoir
+  description: The Teknoir Triton Inference Server
+  annotations:
+    'github.com/project-slug': teknoir/triton-helm
+    'backstage.io/techdocs-ref': dir:.
+spec:
+  type: app
+  owner: group:teknoir/public
+  system: system:teknoir/core
+  lifecycle: production
+  dependsOn:
+    - component:teknoir/nvcr.io.nvidia.tritonserver
+    - component:teknoir/triton-helm
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  title: Triton HelmChart
+  name: triton-helm
+  namespace: teknoir
+  description: The Teknoir Triton Inference Server HelmChart
+  annotations:
+    'github.com/project-slug': teknoir/triton-helm
+    'teknoir.org/helm-registry': teknoir.github.io/triton-helm
+    'teknoir.org/helmchart': triton
+    'backstage.io/techdocs-ref': dir:.
+spec:
+  type: helmchart
+  owner: group:teknoir/public
+  system: system:teknoir/core
+  lifecycle: production
+  dependsOn:
+    - component:teknoir/ghcr.io.teknoir.triton-app
+  registry: teknoir.github.io/triton-helm
+  helmchart: triton
+  versions:
+    - 0.2.1
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  title: Triton Image
+  name: nvcr.io.nvidia.tritonserver
+  namespace: teknoir
+  description: NVIDIA Triton Inference Server
+  annotations:
+    'github.com/project-slug': teknoir/triton-helm
+    'backstage.io/techdocs-ref': dir:.
+spec:
+  type: image
+  owner: group:teknoir/public
+  system: system:teknoir/core
+  lifecycle: production
+  repository: nvcr.io/nvidia/tritonserver
+  versions:
+    - 25.02-py3
