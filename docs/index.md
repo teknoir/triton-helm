@@ -23,7 +23,7 @@ across the Teknoir edge fleet.
 ## 🔭 At a Glance
 
 - **Runtime:** NVIDIA Triton Inference Server `25.02-py3`
-- **Chart version:** `0.2.1`
+- **Chart version:** `0.2.1` (stable), `0.3.0-rc.1` (pre-release)
 - **Registry:** `teknoir.github.io/triton-helm`
 - **Owner:** `group:teknoir/public`
 - **Lifecycle:** `production`

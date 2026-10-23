@@ -36,6 +36,7 @@ Models are mounted from a shared host path and discovered at runtime:
 ```yaml
 modelRepositoryPath: /opt/teknoir/models
 models: []
+requiredModels: []   # models that gate readiness
 ```
 
 ## 🛰️ Lifecycle

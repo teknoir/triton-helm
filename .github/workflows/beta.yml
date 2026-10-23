@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - beta
+      - 'beta/**'
 
 jobs:
   release:
@@ -41,5 +42,8 @@ jobs:
 
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.6.0
+        with:
+          # pre-releases must not take the "Latest" badge from the stable release
+          mark_as_latest: false
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
