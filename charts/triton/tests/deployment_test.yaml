@@ -144,3 +144,29 @@ tests:
           value:
             kubernetes.io/hostname: rtx2000-ada-128gb-se
       - equal: {path: "spec.template.spec.containers[0].readinessProbe.httpGet.path", value: /v2/models/rtdetr/ready}
+
+  - it: renders with requiredModels set to null (hand-edited valuesContent)
+    set:
+      requiredModels: null
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].readinessProbe.httpGet.path
+          value: /v2/health/ready
+
+  - it: sanitizes init container names to DNS-1123 labels
+    set:
+      models:
+        - {name: My.Model_v2, image: "ghcr.io/teknoir/x:sha-1234abcd"}
+    asserts:
+      - equal:
+          path: spec.template.spec.initContainers[0].name
+          value: init-container-my-model-v2
+
+  - it: fails when two models map to the same init container name
+    set:
+      models:
+        - {name: up_down, image: "ghcr.io/teknoir/a:sha-1234abcd"}
+        - {name: up-down, image: "ghcr.io/teknoir/b:sha-1234abcd"}
+    asserts:
+      - failedTemplate:
+          errorPattern: map to the same init container name

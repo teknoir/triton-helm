@@ -31,8 +31,12 @@ spec:
         {{- toYaml $.Values.nodeSelector | nindent 8 }}
 {{- if not (empty .Values.models) }}
       initContainers:
+{{- $seen := dict }}
 {{- range .Values.models }}
-        - name: init-container-{{ .name | lower | replace "_" "-" | trunc 48 | trimSuffix "-" }}
+{{- $cname := printf "init-container-%s" (regexReplaceAll "[^a-z0-9-]+" (lower .name) "-") | trunc 63 | trimSuffix "-" }}
+{{- if hasKey $seen $cname }}{{ fail (printf "models: %q and another model map to the same init container name %s" .name $cname) }}{{ end }}
+{{- $_ := set $seen $cname true }}
+        - name: {{ $cname }}
           image: {{ .image }}
           imagePullPolicy: {{ include "triton.modelPullPolicy" (dict "root" $ "model" .) }}
           volumeMounts:
@@ -87,18 +91,19 @@ spec:
             initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
             periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
             timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds }}
-{{- if eq (len .Values.requiredModels) 1 }}
+{{- $required := .Values.requiredModels | default list }}
+{{- if eq (len $required) 1 }}
             httpGet:
-              path: /v2/models/{{ index .Values.requiredModels 0 }}/ready
+              path: /v2/models/{{ index $required 0 }}/ready
               port: http
-{{- else if gt (len .Values.requiredModels) 1 }}
+{{- else if gt (len $required) 1 }}
             exec:
               command:
                 - sh
                 - -c
                 - 'for m in "$@"; do curl -fsS --max-time 2 -o /dev/null "http://127.0.0.1:8000/v2/models/${m}/ready" || exit 1; done'
                 - ready-check
-{{- range .Values.requiredModels }}
+{{- range $required }}
                 - {{ . | quote }}
 {{- end }}
 {{- else }}
