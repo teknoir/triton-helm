@@ -1,1 +1,9 @@
 1. The Triton Inference Server is installed in the namespace: {{ .Release.Namespace }}
+2. Models are served from {{ .Values.modelRepositoryPath }}{{ if .Values.loadModels }} (explicit load: {{ join ", " .Values.loadModels }}){{ end }}.
+3. Check them: kubectl -n {{ .Release.Namespace }} exec deploy/triton -- curl -s -XPOST localhost:8000/v2/repository/index
+{{- if not .Values.tritonArgs.exitOnError }}
+   A model that failed to load does not stop Triton; it shows up as UNAVAILABLE there.
+{{- end }}
+{{- if .Values.requiredModels }}
+4. The pod is Ready only when these models are ready: {{ join ", " .Values.requiredModels }}.
+{{- end }}

@@ -1,0 +1,18 @@
+# Robot-like values (vision-station-01 style): three model images, memory override,
+# nodeSelector, required model gating readiness.
+modelRepositoryPath: /opt/teknoir/models
+models:
+  - name: rtdetr
+    image: ghcr.io/teknoir/rtdetr-triton:sha-0123abcd
+  - name: resnet50_pose
+    image: ghcr.io/teknoir/resnet50-pose-estimation-triton:latest
+  - name: up_down_classifier
+    image: ghcr.io/teknoir/up-down-classifier-triton:latest
+    imagePullPolicy: IfNotPresent
+requiredModels:
+  - rtdetr
+resources:
+  limits:
+    memory: 8Gi
+nodeSelector:
+  kubernetes.io/hostname: rtx2000-ada-128gb-se

@@ -22,3 +22,6 @@
 *.tmproj
 .vscode/
 tmp/
+# helm-unittest suites and CI value files are not part of the package
+tests/
+ci/
