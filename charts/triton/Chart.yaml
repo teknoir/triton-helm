@@ -3,5 +3,7 @@ name: triton
 description: A Helm chart for Triton Inference Server
 
 type: application
-version: 0.2.1
+# Pre-release: Helm (and the k3s helm-controller) only resolves it when
+# `version: 0.3.0-rc.1` (or --devel) is requested explicitly.
+version: 0.3.0-rc.1
 appVersion: "25.02"

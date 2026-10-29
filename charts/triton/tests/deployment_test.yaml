@@ -1,0 +1,172 @@
+suite: triton deployment
+templates:
+  - templates/deployment.yaml
+tests:
+  - it: defaults are robust (no exit on error, lenient readiness, 4Gi, quiet logs)
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: "--exit-on-error=false"
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: "--strict-readiness=false"
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: "--log-verbose=0"
+      - notContains:
+          path: spec.template.spec.containers[0].args
+          content: "--model-control-mode=explicit"
+      - equal:
+          path: spec.template.spec.containers[0].resources.limits.memory
+          value: 4Gi
+      - equal:
+          path: spec.template.spec.containers[0].readinessProbe.httpGet.path
+          value: /v2/health/ready
+      - equal:
+          path: spec.template.spec.containers[0].startupProbe.failureThreshold
+          value: 60
+      - notExists:
+          path: spec.template.spec.initContainers
+
+  - it: old behaviour can be restored
+    set:
+      tritonArgs.exitOnError: true
+      tritonArgs.strictReadiness: true
+      tritonArgs.logVerbose: 1
+      probes.startup.enabled: false
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: "--exit-on-error=true"
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: "--strict-readiness=true"
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: "--log-verbose=1"
+      - notExists:
+          path: spec.template.spec.containers[0].startupProbe
+
+  - it: extraArgs and loadModels
+    set:
+      tritonArgs.extraArgs: ["--http-thread-count=4"]
+      loadModels: [rtdetr, pose]
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: "--http-thread-count=4"
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: "--model-control-mode=explicit"
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: "--load-model=rtdetr"
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: "--load-model=pose"
+
+  - it: one required model gates readiness with an httpGet
+    set:
+      requiredModels: [rtdetr]
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].readinessProbe.httpGet.path
+          value: /v2/models/rtdetr/ready
+      - notExists:
+          path: spec.template.spec.containers[0].readinessProbe.exec
+
+  - it: several required models gate readiness with an exec probe
+    set:
+      requiredModels: [rtdetr, pose]
+    asserts:
+      - notExists:
+          path: spec.template.spec.containers[0].readinessProbe.httpGet
+      - equal:
+          path: spec.template.spec.containers[0].readinessProbe.exec.command[0]
+          value: sh
+      - equal:
+          path: spec.template.spec.containers[0].readinessProbe.exec.command[3]
+          value: ready-check
+      - equal:
+          path: spec.template.spec.containers[0].readinessProbe.exec.command[4]
+          value: rtdetr
+      - equal:
+          path: spec.template.spec.containers[0].readinessProbe.exec.command[5]
+          value: pose
+
+  - it: model init containers pick the pull policy from the tag
+    set:
+      models:
+        - {name: a, image: "ghcr.io/teknoir/a:sha-0123abcd"}
+        - {name: b, image: "ghcr.io/teknoir/b:latest"}
+        - {name: c, image: "ghcr.io/teknoir/c"}
+        - {name: d, image: "ghcr.io/teknoir/d@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"}
+        - {name: e, image: "ghcr.io/teknoir/e:main", imagePullPolicy: Never}
+        - {name: f, image: "localhost:5000/f:v1"}
+    asserts:
+      - equal: {path: "spec.template.spec.initContainers[0].imagePullPolicy", value: IfNotPresent}
+      - equal: {path: "spec.template.spec.initContainers[1].imagePullPolicy", value: Always}
+      - equal: {path: "spec.template.spec.initContainers[2].imagePullPolicy", value: Always}
+      - equal: {path: "spec.template.spec.initContainers[3].imagePullPolicy", value: IfNotPresent}
+      - equal: {path: "spec.template.spec.initContainers[4].imagePullPolicy", value: Never}
+      - equal: {path: "spec.template.spec.initContainers[5].imagePullPolicy", value: Always}
+
+  - it: modelImagePullPolicy forces the policy for all models except per-model overrides
+    set:
+      modelImagePullPolicy: IfNotPresent
+      models:
+        - {name: a, image: "ghcr.io/teknoir/a:latest"}
+        - {name: b, image: "ghcr.io/teknoir/b:latest", imagePullPolicy: Always}
+    asserts:
+      - equal: {path: "spec.template.spec.initContainers[0].imagePullPolicy", value: IfNotPresent}
+      - equal: {path: "spec.template.spec.initContainers[1].imagePullPolicy", value: Always}
+
+  - it: robot-like values
+    values:
+      - ../ci/robot-values.yaml
+    asserts:
+      - lengthEqual:
+          path: spec.template.spec.initContainers
+          count: 3
+      - equal: {path: "spec.template.spec.initContainers[0].imagePullPolicy", value: IfNotPresent}
+      - equal: {path: "spec.template.spec.initContainers[1].imagePullPolicy", value: Always}
+      - equal: {path: "spec.template.spec.initContainers[2].imagePullPolicy", value: IfNotPresent}
+      - equal:
+          path: spec.template.spec.initContainers[1].name
+          value: init-container-resnet50-pose
+      - equal:
+          path: spec.template.spec.initContainers[2].name
+          value: init-container-up-down-classifier
+      - equal: {path: "spec.template.spec.containers[0].resources.limits.memory", value: 8Gi}
+      - equal: {path: "spec.template.spec.containers[0].resources.limits.cpu", value: 2000m}
+      - equal:
+          path: spec.template.spec.nodeSelector
+          value:
+            kubernetes.io/hostname: rtx2000-ada-128gb-se
+      - equal: {path: "spec.template.spec.containers[0].readinessProbe.httpGet.path", value: /v2/models/rtdetr/ready}
+
+  - it: renders with requiredModels set to null (hand-edited valuesContent)
+    set:
+      requiredModels: null
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].readinessProbe.httpGet.path
+          value: /v2/health/ready
+
+  - it: sanitizes init container names to DNS-1123 labels
+    set:
+      models:
+        - {name: My.Model_v2, image: "ghcr.io/teknoir/x:sha-1234abcd"}
+    asserts:
+      - equal:
+          path: spec.template.spec.initContainers[0].name
+          value: init-container-my-model-v2
+
+  - it: fails when two models map to the same init container name
+    set:
+      models:
+        - {name: up_down, image: "ghcr.io/teknoir/a:sha-1234abcd"}
+        - {name: up-down, image: "ghcr.io/teknoir/b:sha-1234abcd"}
+    asserts:
+      - failedTemplate:
+          errorPattern: map to the same init container name

@@ -8,15 +8,72 @@ image:
 
 # The path to the models directory
 modelRepositoryPath: /opt/teknoir/models
-# Models to be installed via a shared mounted host path (volume)
+
+# Models to be installed via a shared mounted host path (volume).
+# One init container per entry:
+#   - name: rtdetr
+#     image: ghcr.io/teknoir/rtdetr-triton:sha-0123abcd
+#     imagePullPolicy: IfNotPresent   # optional, overrides modelImagePullPolicy
 models: []
+
+# Pull policy of the model init containers.
+#   ""             (default) auto: IfNotPresent when the image tag is immutable
+#                  (":sha-<hex>" or "@sha256:<digest>"), Always for everything
+#                  else (":latest", branch tags, ...) so a moved mutable tag is
+#                  re-pulled. Pin model images to sha-* tags.
+#   Always | IfNotPresent | Never   forces it for all models.
+# A per-model `imagePullPolicy` wins over this.
+modelImagePullPolicy: ""
+
+# tritonserver flags
+tritonArgs:
+  # Default tritonserver exits when ANY model fails to load, which also takes
+  # down all healthy models. false: keep serving the models that did load; the
+  # failure is logged ("failed to load '<model>'") and shown as UNAVAILABLE in
+  # POST /v2/repository/index.
+  exitOnError: false
+  # Default tritonserver reports /v2/health/ready = 503 while ANY model is not
+  # ready. false: ready as soon as the server is up. Use requiredModels to gate
+  # readiness on the models you depend on.
+  strictReadiness: false
+  # 0 = off. (The old chart hardcoded 1, which floods the log.)
+  logVerbose: 0
+  minSupportedComputeCapability: "5.3"
+  # Extra raw arguments appended to the tritonserver command line,
+  # e.g. ["--http-thread-count=4"].
+  extraArgs: []
+
+# Load only these models (--model-control-mode=explicit, one --load-model each).
+# Directories in the model repository that are not listed (stale leftovers from
+# older model images) are ignored. Empty (default) loads every directory.
+loadModels: []
+
+# Models that must be ready for the pod to be Ready. When set, the readiness
+# probe checks GET /v2/models/<name>/ready for each one instead of
+# /v2/health/ready. One name uses an httpGet probe; two or more use an exec
+# probe that needs `curl` in the Triton image (the *-py3 images have it).
+requiredModels: []
+
+probes:
+  # Triton loads all models before it opens its ports; without a startupProbe
+  # the liveness probe kills the container after ~30 s of slow model loading.
+  startup:
+    enabled: true
+    periodSeconds: 5
+    failureThreshold: 60   # 5 min to load all models
+  readiness:
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 5
+
 # Default annotations
 annotations:
   teknoir.org/managed-by: devstudio
 resources:
   limits:
     cpu: 2000m
-    memory: 2048Mi
+    # One ONNX model alone uses 1.2-1.4 GiB RSS; a robot loads several.
+    memory: 4Gi
   requests:
     cpu: 400m
     memory: 256Mi

@@ -31,10 +31,14 @@ spec:
         {{- toYaml $.Values.nodeSelector | nindent 8 }}
 {{- if not (empty .Values.models) }}
       initContainers:
+{{- $seen := dict }}
 {{- range .Values.models }}
-        - name: init-container-{{ .name }}
+{{- $cname := printf "init-container-%s" (regexReplaceAll "[^a-z0-9-]+" (lower .name) "-") | trunc 63 | trimSuffix "-" }}
+{{- if hasKey $seen $cname }}{{ fail (printf "models: %q and another model map to the same init container name %s" .name $cname) }}{{ end }}
+{{- $_ := set $seen $cname true }}
+        - name: {{ $cname }}
           image: {{ .image }}
-          imagePullPolicy: Always
+          imagePullPolicy: {{ include "triton.modelPullPolicy" (dict "root" $ "model" .) }}
           volumeMounts:
             - name: model-volume
               mountPath: /models
@@ -46,15 +50,24 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: [ "/opt/tritonserver/bin/tritonserver" ]
           args:
-            [
-              "--model-repository=/models",
-              "--backend-directory=/opt/tritonserver/backends",
-              "--log-verbose=1",
-              "--log-info=true",
-              "--log-warning=true",
-              "--log-error=true",
-              "--min-supported-compute-capability=5.3",
-            ]
+            - "--model-repository=/models"
+            - "--backend-directory=/opt/tritonserver/backends"
+            - "--log-verbose={{ .Values.tritonArgs.logVerbose }}"
+            - "--log-info=true"
+            - "--log-warning=true"
+            - "--log-error=true"
+            - "--min-supported-compute-capability={{ .Values.tritonArgs.minSupportedComputeCapability }}"
+            - "--exit-on-error={{ .Values.tritonArgs.exitOnError }}"
+            - "--strict-readiness={{ .Values.tritonArgs.strictReadiness }}"
+{{- if .Values.loadModels }}
+            - "--model-control-mode=explicit"
+{{- range .Values.loadModels }}
+            - "--load-model={{ . }}"
+{{- end }}
+{{- end }}
+{{- range .Values.tritonArgs.extraArgs }}
+            - {{ . | quote }}
+{{- end }}
           ports:
             - containerPort: 8000
               name: http
@@ -66,12 +79,38 @@ spec:
             httpGet:
               path: /v2/health/live
               port: http
+{{- if .Values.probes.startup.enabled }}
+          startupProbe:
+            periodSeconds: {{ .Values.probes.startup.periodSeconds }}
+            failureThreshold: {{ .Values.probes.startup.failureThreshold }}
+            httpGet:
+              path: /v2/health/live
+              port: http
+{{- end }}
           readinessProbe:
-            initialDelaySeconds: 5
-            periodSeconds: 5
+            initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds }}
+{{- $required := .Values.requiredModels | default list }}
+{{- if eq (len $required) 1 }}
+            httpGet:
+              path: /v2/models/{{ index $required 0 }}/ready
+              port: http
+{{- else if gt (len $required) 1 }}
+            exec:
+              command:
+                - sh
+                - -c
+                - 'for m in "$@"; do curl -fsS --max-time 2 -o /dev/null "http://127.0.0.1:8000/v2/models/${m}/ready" || exit 1; done'
+                - ready-check
+{{- range $required }}
+                - {{ . | quote }}
+{{- end }}
+{{- else }}
             httpGet:
               path: /v2/health/ready
               port: http
+{{- end }}
           resources:
             {{- toYaml $.Values.resources | nindent 12 }}
           volumeMounts:
